@@ -5,17 +5,9 @@ import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js'
 import Tower from './assets/Tower'
 import Enemy from './assets/Enemy'
 import Bullet from './assets/Bullet'
+import { GRID_CELL_SIZE } from './constants'
 import './App.css'
 extend({ FlyControls })
-
-function Controls() {
-	const { camera } = useThree()
-	const ref = useRef()
-	useFrame((state, delta) => ref.current.update(delta))
-	return <flyControls ref={ref} args={[camera]} />
-}
-
-const GRID_CELL_SIZE = 15
 
 const GRID_SIZE = 20
 
@@ -58,10 +50,15 @@ function getPath() {
 	return [indexedPath, pathArray]
 }
 
+function getEnemy(path) {
+	return { currentCellIndex: 0, x: path[0][0], y: path[0][1] }
+}
+
 function App() {
 	const [towers, setTowers] = useState([])
-
 	const [path, pathArray] = useMemo(getPath, [])
+	const [enemies, setEnemies] = useState({ 0: {...getEnemy(pathArray), id: 0} })
+
 
 	return (
 		<div className="App">
@@ -76,7 +73,13 @@ function App() {
 					<Tower x={(tower.x*GRID_CELL_SIZE) + (GRID_CELL_SIZE/2)} y={tower.y*GRID_CELL_SIZE + GRID_CELL_SIZE / 2} color={'hotpink'} key={tower.id}/>
 				)}
 				<Ground onClick={(x, y) => setTowers(towers => [...towers, {id: nextTowerId++, x, y}])} path={path}/>
-				<Enemies path={pathArray} />
+				<Enemies path={pathArray} enemies={enemies} onUpdate={(enemyId, update) => {
+					setEnemies(enemies => {
+						const newEnemies = { ...enemies }
+						newEnemies[enemyId] = { ...newEnemies[enemyId], ...update }
+						return newEnemies
+					})
+				}}/>
 				<Bullets />
 			</Canvas>
 		</div>
@@ -124,69 +127,35 @@ function Ground({onClick, path}: {onClick: (number, number) => mixed}) {
 	return grounds
 }
 
-const ENEMY_GRIDS_PER_SECOND = 2
-const ENEMY_SPEED = ENEMY_GRIDS_PER_SECOND * GRID_CELL_SIZE
 
-function Enemies({path}: {path: Array<[number, number]>}) {
-	const [currentCellIndex, setCurrentCellIndex] = useState(0)
-	const [x, setX] = useState<number>(path[currentCellIndex][0] * GRID_CELL_SIZE)
-	const [y, setY] = useState(path[currentCellIndex][1] * GRID_CELL_SIZE)
-	
-	function getTargetLocation(): [number, number] | null {
-		const targetCell = path[currentCellIndex + 1] 
+function Enemies({path, enemies, onUpdate}: {path: Array<[number, number]>, enemies: Enemy, onUpdate: (string, {}) => mixed}) {
+	return (
+		Object.values(enemies).map(enemy => {
+			const targetCell = path[enemy.currentCellIndex + 1] 
 
-		if (!targetCell) {
-			return null
-		}
+			if (!targetCell) {
+				return null
+			}
 
-		const [targetCellX, targetCellY] = targetCell
-		return [targetCellX * GRID_CELL_SIZE, targetCellY * GRID_CELL_SIZE]
-	}
+			const [targetCellX, targetCellY] = targetCell
+			const targetX = targetCellX * GRID_CELL_SIZE
+			const targetY = targetCellY * GRID_CELL_SIZE
+			return <Enemy
+				key={enemy.id}
+				{...enemy}
+				targetLocation={[targetX, targetY]}
+				onUpdate={update => {
+					const yIsUpToDate = (update.y || enemy.y) === targetY
+					const xIsUpToDate = (update.x || enemy.x) === targetX
+        
+					if (yIsUpToDate && xIsUpToDate) {
+						update.currentCellIndex = enemy.currentCellIndex + 1
+					}
 
-	useFrame((_, delta) => {
-		const targetLocation = getTargetLocation()
-		if (!targetLocation) {
-			// ??
-		}
-		const [targetX, targetY] = targetLocation
-
-		if (x !== targetX) {
-			setX(x => {
-				if (x < targetX) {
-					return Math.min(x + delta * ENEMY_SPEED, targetX)
-				} else if (x > targetX) {
-					return Math.max(x - delta * ENEMY_SPEED, targetX)
-				}
-				return x
-			})
-		}
-
-		if (y !== targetY) {
-			console.log(targetX, targetY)
-			setY(y => {
-				if (y < targetY) {
-					return Math.min(y + delta * ENEMY_SPEED, targetY)
-				} else if (y > targetY) {
-					return Math.max(y - delta * ENEMY_SPEED, targetY)
-				}
-				return y
-			})
-		}
-	})
-
-	useEffect(() => {
-		const targetLocation = getTargetLocation()
-		if (!targetLocation) {
-			// ??
-		}
-		if (x === targetLocation[0] && y === targetLocation[1]) {
-			setCurrentCellIndex(i => i + 1)
-		}
-	}, [x, y])
-
-	return <>
-		<Enemy x={x} y={y} currentLocation={''}/>
-	</>
+					onUpdate(enemy.id, update)
+				}}/>
+		})
+	)
 }
 
 function Bullets() {
