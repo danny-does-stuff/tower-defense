@@ -1,10 +1,6 @@
 import React from 'react'
 import {useFrame} from 'react-three-fiber'
-import { GRID_CELL_SIZE } from '../constants'
-const SIZE = 5
-
-const GRID_CELLS_PER_SECOND = 5
-const SPEED = GRID_CELLS_PER_SECOND * GRID_CELL_SIZE
+import { ENEMY_SIZE, ENEMY_SPEED } from '../constants'
 
 export default function Enemy({x, y, targetLocation, onUpdate }: {x: number, y: number, targetLocation: [number, number] | null }) {
 	useFrame((_, delta) => {
@@ -17,17 +13,17 @@ export default function Enemy({x, y, targetLocation, onUpdate }: {x: number, y: 
 
 		if (x !== targetX) {
 			if (x < targetX) {
-				update.x = Math.min(x + delta * SPEED, targetX)
+				update.x = Math.min(x + delta * ENEMY_SPEED, targetX)
 			} else if (x > targetX) {
-				update.x = Math.max(x - delta * SPEED, targetX)
+				update.x = Math.max(x - delta * ENEMY_SPEED, targetX)
 			}
 		}
 
 		if (y !== targetY) {
 			if (y < targetY) {
-				update.y = Math.min(y + delta * SPEED, targetY)
+				update.y = Math.min(y + delta * ENEMY_SPEED, targetY)
 			} else if (y > targetY) {
-				update.y = Math.max(y - delta * SPEED, targetY)
+				update.y = Math.max(y - delta * ENEMY_SPEED, targetY)
 			}
 		}
 
@@ -35,12 +31,12 @@ export default function Enemy({x, y, targetLocation, onUpdate }: {x: number, y: 
 	})
 
 
-	const position: [number, number, number] = [x, y, SIZE]
+	const position: [number, number, number] = [x, y, ENEMY_SIZE]
 
 	return <mesh
 		position={position}
 		scale={[1, 1, 1]}>
-		<tetrahedronBufferGeometry args={[SIZE, 0]} />
+		<tetrahedronBufferGeometry args={[ENEMY_SIZE, 0]} />
 		<meshStandardMaterial color={'blue'}/>
 	</mesh>
 }

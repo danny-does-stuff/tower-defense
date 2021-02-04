@@ -5,13 +5,9 @@ import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js'
 import Tower from './assets/Tower'
 import Enemy from './assets/Enemy'
 import Bullet from './assets/Bullet'
-import { GRID_CELL_SIZE } from './constants'
+import { GRID_CELL_SIZE, GRID_SIZE, MAP_WIDTH, GROUND_HEIGHT } from './constants'
 import './App.css'
 extend({ FlyControls })
-
-const GRID_SIZE = 20
-
-const MAP_WIDTH = GRID_CELL_SIZE * GRID_SIZE
 
 function Camera() {
 	const ref = useRef()
@@ -87,8 +83,6 @@ function App() {
 }
 
 let nextTowerId = 0
-
-const GROUND_HEIGHT = 10
 
 function Ground({onClick, path}: {onClick: (number, number) => mixed}) {
 	const grounds = []
