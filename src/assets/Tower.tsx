@@ -1,8 +1,8 @@
-import React, {useRef, useState} from 'react'
-import {useFrame} from 'react-three-fiber'
+import React, { useRef, useState } from 'react'
+import { useFrame } from 'react-three-fiber'
 import { TOWER_SIZE } from '../constants'
 
-export default function Tower({x, y, color}: {x: number, y: number, color: string}) {
+export default function Tower({ x, y, color }: { x: number; y: number; color: string }) {
 	// This reference will give us direct access to the mesh
 	const mesh = useRef()
 
@@ -25,13 +25,18 @@ export default function Tower({x, y, color}: {x: number, y: number, color: strin
 			position={position}
 			ref={mesh}
 			scale={[1, 1, 1]}
-			onClick={(e) => {e.stopPropagation() 
-				setActive(!active)}}
-			onPointerOver={(e) => {e.stopPropagation()
-				setHover(true)}}
-			onPointerOut={() => setHover(false)}>
+			onClick={(e) => {
+				e.stopPropagation()
+				setActive(!active)
+			}}
+			onPointerOver={(e) => {
+				e.stopPropagation()
+				setHover(true)
+			}}
+			onPointerOut={() => setHover(false)}
+		>
 			<boxBufferGeometry args={[TOWER_SIZE, TOWER_SIZE, TOWER_SIZE]} />
-			<meshStandardMaterial color={hovered ? 'orange' : color}/>
+			<meshStandardMaterial color={hovered ? 'orange' : color} />
 		</mesh>
 	)
 }
