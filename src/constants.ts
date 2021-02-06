@@ -9,3 +9,6 @@ export const TOWER_SIZE = 10
 export const ENEMY_SIZE = 5
 const ENEMY_GRID_CELLS_PER_SECOND = 5
 export const ENEMY_SPEED = ENEMY_GRID_CELLS_PER_SECOND * GRID_CELL_SIZE
+
+// in meters/second
+export const BULLET_SPEED = 200

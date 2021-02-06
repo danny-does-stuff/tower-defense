@@ -5,8 +5,17 @@ import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js'
 import Tower from './assets/Tower'
 import Enemy from './assets/Enemy'
 import Bullet from './assets/Bullet'
-import { GRID_CELL_SIZE, GRID_SIZE, MAP_WIDTH, GROUND_HEIGHT } from './constants'
+import {
+	GRID_CELL_SIZE,
+	GRID_SIZE,
+	MAP_WIDTH,
+	GROUND_HEIGHT,
+	ENEMY_SIZE,
+	BULLET_SPEED,
+	ENEMY_SPEED,
+} from './constants'
 import './App.css'
+import { getTimeToTarget, getFutureLocation, getPathLocation } from './helpers'
 extend({ FlyControls })
 
 function Camera() {
@@ -46,8 +55,15 @@ function getPath() {
 	return [indexedPath, pathArray]
 }
 
-function getEnemy(path) {
-	return { currentCellIndex: 0, x: path[0][0], y: path[0][1] }
+interface EnemyType {
+	currentCellIndex: number
+	x: number
+	y: number
+	speed: number
+}
+
+function getEnemy(path): EnemyType {
+	return { currentCellIndex: 0, x: path[0][0], y: path[0][1], speed: ENEMY_SPEED }
 }
 
 function App() {
@@ -55,6 +71,14 @@ function App() {
 	const [path, pathArray] = useMemo(getPath, [])
 	const [enemies, setEnemies] = useState({
 		0: { ...getEnemy(pathArray), id: 0 },
+	})
+	const [bullets, setBullets] = useState<BulletType[]>([])
+
+	const firstEnemy = Object.values(enemies).reduce((result, currentEnemy) => {
+		if (currentEnemy.currentCellIndex > result.currentCellIndex) {
+			return currentEnemy
+		}
+		return result
 	})
 
 	return (
@@ -74,6 +98,28 @@ function App() {
 						x={tower.x * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}
 						y={tower.y * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}
 						color={'hotpink'}
+						onShoot={(origin, bulletSpeed) => {
+							setBullets((bullets) => [
+								...bullets,
+								{
+									origin,
+									destination: [
+										...getFutureLocation(
+											firstEnemy,
+											pathArray,
+											getTimeToTarget(
+												origin,
+												[firstEnemy.x, firstEnemy.y, ENEMY_SIZE / 2],
+												BULLET_SPEED
+											)
+										),
+										ENEMY_SIZE / 2,
+									],
+									speed: bulletSpeed,
+									startTime: new Date(),
+								},
+							])
+						}}
 						key={tower.id}
 					/>
 				))}
@@ -92,7 +138,12 @@ function App() {
 						})
 					}}
 				/>
-				<Bullets />
+				<Bullets
+					bullets={bullets}
+					removeBullet={(bulletToRemove) => {
+						setBullets((bullets) => bullets.filter((bullet) => bullet !== bulletToRemove))
+					}}
+				/>
 			</Canvas>
 		</div>
 	)
@@ -147,19 +198,18 @@ function Enemies({
 	onUpdate,
 }: {
 	path: Array<[number, number]>
-	enemies: Enemy
+	enemies: { number: EnemyType }
 	onUpdate: (string, {}) => mixed
 }) {
 	return Object.values(enemies).map((enemy) => {
-		const targetCell = path[enemy.currentCellIndex + 1]
+		const targetLocation = getPathLocation(path, enemy.currentCellIndex + 1)
 
-		if (!targetCell) {
+		if (!targetLocation) {
 			return null
 		}
 
-		const [targetCellX, targetCellY] = targetCell
-		const targetX = targetCellX * GRID_CELL_SIZE
-		const targetY = targetCellY * GRID_CELL_SIZE
+		const [targetX, targetY] = targetLocation
+
 		return (
 			<Enemy
 				key={enemy.id}
@@ -180,8 +230,28 @@ function Enemies({
 	})
 }
 
-function Bullets() {
-	return <Bullet position={[100, 0, 50]} />
+interface BulletType {
+	origin: [number, number, number]
+	destination: [number, number, number]
+	startTime: Date
+}
+
+function Bullets({
+	bullets,
+	removeBullet,
+}: {
+	bullets: BulletType[]
+	removeBullet: (bullet: BulletType) => void
+}) {
+	return bullets.map((bullet) => (
+		<Bullet
+			{...bullet}
+			onFinish={() => {
+				removeBullet(bullet)
+			}}
+			key={`${bullet.startTime}${bullet.origin.join('')}${bullet.destination.join('')}`}
+		/>
+	))
 }
 
 export default App

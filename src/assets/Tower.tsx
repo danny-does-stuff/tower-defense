@@ -1,21 +1,29 @@
 import React, { useRef, useState } from 'react'
 import { useFrame } from 'react-three-fiber'
-import { TOWER_SIZE } from '../constants'
+import { BULLET_SPEED, TOWER_SIZE } from '../constants'
 
-export default function Tower({ x, y, color }: { x: number; y: number; color: string }) {
-	// This reference will give us direct access to the mesh
-	const mesh = useRef()
-
+export default function Tower({
+	x,
+	y,
+	color,
+	onShoot,
+}: {
+	x: number
+	y: number
+	color: string
+	onShoot: (origin: [number, number, number], bulletSpeed: number) => void
+}) {
+	const shootRef = useRef(30)
 	// Set up state for the hovered and active state
 	const [hovered, setHover] = useState(false)
 	const [active, setActive] = useState(false)
 
 	// Rotate mesh every frame, this is outside of React without overhead
 	useFrame(() => {
-		const currentMesh = mesh.current
-		if (currentMesh) {
-			// currentMesh.rotation.y += 0.01
-			// currentMesh.rotation.x += 0.01
+		shootRef.current++
+		if (shootRef.current >= 40) {
+			shootRef.current = 0
+			onShoot([x, y, TOWER_SIZE * 0.75], BULLET_SPEED)
 		}
 	})
 	const position: [number, number, number] = [x, y, TOWER_SIZE / 2]
@@ -23,7 +31,6 @@ export default function Tower({ x, y, color }: { x: number; y: number; color: st
 	return (
 		<mesh
 			position={position}
-			ref={mesh}
 			scale={[1, 1, 1]}
 			onClick={(e) => {
 				e.stopPropagation()
