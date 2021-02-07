@@ -7,6 +7,7 @@ export default function Tower({
 	y,
 	color,
 	onShoot,
+	target,
 }: {
 	x: number
 	y: number
@@ -18,8 +19,10 @@ export default function Tower({
 	const [hovered, setHover] = useState(false)
 	const [active, setActive] = useState(false)
 
-	// Rotate mesh every frame, this is outside of React without overhead
 	useFrame(() => {
+		if (!target) {
+			return
+		}
 		shootRef.current++
 		if (shootRef.current >= 40) {
 			shootRef.current = 0

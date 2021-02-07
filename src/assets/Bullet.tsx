@@ -24,7 +24,6 @@ export default function Bullet({
 		config: { duration: getTimeToTarget(origin, destination, speed) },
 		onRest: onFinish,
 	})
-	console.log(position)
 
 	return (
 		<a.mesh position={position} scale={[1, 1, 1]}>

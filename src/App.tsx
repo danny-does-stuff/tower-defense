@@ -60,26 +60,50 @@ interface EnemyType {
 	x: number
 	y: number
 	speed: number
+	hp: number
+	futureHp: number
+	id: number
 }
 
+let enemyId = 0
+
 function getEnemy(path): EnemyType {
-	return { currentCellIndex: 0, x: path[0][0], y: path[0][1], speed: ENEMY_SPEED }
+	return {
+		currentCellIndex: 0,
+		x: path[0][0],
+		y: path[0][1],
+		speed: ENEMY_SPEED,
+		hp: 100,
+		futureHp: 100,
+		id: enemyId++,
+	}
 }
 
 function App() {
 	const [towers, setTowers] = useState([])
 	const [path, pathArray] = useMemo(getPath, [])
-	const [enemies, setEnemies] = useState({
-		0: { ...getEnemy(pathArray), id: 0 },
+	const [enemies, setEnemies] = useState<{ number: EnemyType }>(() => {
+		const enemy = getEnemy(pathArray)
+
+		return {
+			[enemy.id]: enemy,
+		}
 	})
 	const [bullets, setBullets] = useState<BulletType[]>([])
 
-	const firstEnemy = Object.values(enemies).reduce((result, currentEnemy) => {
-		if (currentEnemy.currentCellIndex > result.currentCellIndex) {
+	const firstEnemy: EnemyType | null = Object.values(enemies).reduce((result, currentEnemy) => {
+		if (!result) {
+			if (currentEnemy.futureHp > 0) {
+				return currentEnemy
+			}
+			return null
+		}
+
+		if (currentEnemy.currentCellIndex > result.currentCellIndex && currentEnemy.futureHp > 0) {
 			return currentEnemy
 		}
 		return result
-	})
+	}, null)
 
 	return (
 		<div className="App">
@@ -98,7 +122,19 @@ function App() {
 						x={tower.x * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}
 						y={tower.y * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}
 						color={'hotpink'}
+						target={firstEnemy}
 						onShoot={(origin, bulletSpeed) => {
+							setEnemies((enemies) => {
+								const targettedEnemy = enemies[firstEnemy.id]
+								return {
+									...enemies,
+									[targettedEnemy.id]: {
+										...targettedEnemy,
+										futureHp: targettedEnemy.futureHp - 10,
+									},
+								}
+							})
+
 							setBullets((bullets) => [
 								...bullets,
 								{
@@ -117,6 +153,7 @@ function App() {
 									],
 									speed: bulletSpeed,
 									startTime: new Date(),
+									targetEnemy: firstEnemy.id,
 								},
 							])
 						}}
@@ -141,6 +178,18 @@ function App() {
 				<Bullets
 					bullets={bullets}
 					removeBullet={(bulletToRemove) => {
+						setEnemies((enemies) => {
+							const newEnemies = { ...enemies }
+							const hitEnemyId = bulletToRemove.targetEnemy
+							newEnemies[hitEnemyId] = {
+								...newEnemies[hitEnemyId],
+								hp: newEnemies[hitEnemyId].hp - 10,
+							}
+							if (newEnemies[hitEnemyId].hp === 0) {
+								delete newEnemies[hitEnemyId]
+							}
+							return newEnemies
+						})
 						setBullets((bullets) => bullets.filter((bullet) => bullet !== bulletToRemove))
 					}}
 				/>
@@ -181,6 +230,7 @@ function Ground({ onClick, path }: { onClick: (number, number) => mixed }) {
 						setHoveredGrid([i, j])
 					}}
 					onPointerOut={() => setHoveredGrid(null)}
+					key={`i${i}j${j}`}
 				>
 					<boxBufferGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
 					<meshStandardMaterial color={color} />
@@ -234,6 +284,8 @@ interface BulletType {
 	origin: [number, number, number]
 	destination: [number, number, number]
 	startTime: Date
+	speed: number
+	targetEnemy: number
 }
 
 function Bullets({
