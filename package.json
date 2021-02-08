@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "vite-build": "vite build"
   },
   "dependencies": {
     "euclidean-distance": "^1.0.0",
