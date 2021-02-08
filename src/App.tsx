@@ -15,7 +15,13 @@ import {
 	ENEMY_SPEED,
 } from './constants'
 import './App.css'
-import { getTimeToTarget, getFutureLocation, getPathLocation } from './helpers'
+import {
+	getTimeToTarget,
+	getFutureLocation,
+	getPathLocation,
+	calculateTimeToInterception,
+	getSpeedVector,
+} from './helpers'
 extend({ FlyControls })
 
 function Camera() {
@@ -124,6 +130,19 @@ function App() {
 						color={'hotpink'}
 						target={firstEnemy}
 						onShoot={(origin, bulletSpeed) => {
+							const timeToInterception = calculateTimeToInterception(
+								[firstEnemy.x, firstEnemy.y],
+								getSpeedVector(firstEnemy, pathArray),
+								[origin[0], origin[1]],
+								bulletSpeed
+							)
+							if (!timeToInterception) {
+								throw new Error('Tower is unable to shoot that thing')
+							}
+
+							const interceptionPoint = getFutureLocation(firstEnemy, pathArray, timeToInterception)
+							console.log(firstEnemy.x, firstEnemy.y, interceptionPoint)
+
 							setEnemies((enemies) => {
 								const targettedEnemy = enemies[firstEnemy.id]
 								return {
@@ -139,18 +158,7 @@ function App() {
 								...bullets,
 								{
 									origin,
-									destination: [
-										...getFutureLocation(
-											firstEnemy,
-											pathArray,
-											getTimeToTarget(
-												origin,
-												[firstEnemy.x, firstEnemy.y, ENEMY_SIZE / 2],
-												BULLET_SPEED
-											)
-										),
-										ENEMY_SIZE / 2,
-									],
+									destination: [...interceptionPoint, ENEMY_SIZE / 2],
 									speed: bulletSpeed,
 									startTime: new Date(),
 									targetEnemy: firstEnemy.id,
