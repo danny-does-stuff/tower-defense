@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { useLoader } from 'react-three-fiber'
-import { TextureLoader } from 'three/src/loaders/TextureLoader.js'
+import { useTexture } from '@react-three/drei'
 import { GRID_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT } from '../constants'
 import grassImage from '../assets/grasslight-big.jpg'
 
@@ -78,7 +77,7 @@ function Path({ position }: { position: [number, number, number] }) {
 }
 
 function Grass({ position, ...rest }: { position: [number, number, number] }) {
-	const grassTexture = useLoader(TextureLoader, grassImage)
+	const grassTexture = useTexture(grassImage)
 
 	return (
 		<mesh position={position} {...rest}>

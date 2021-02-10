@@ -8,6 +8,7 @@
     "vite-build": "vite build"
   },
   "dependencies": {
+    "@react-three/drei": "^3.4.1",
     "euclidean-distance": "^1.0.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
