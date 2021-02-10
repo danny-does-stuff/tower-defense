@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo, Suspense } from 'react'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { Canvas, useThree, extend } from 'react-three-fiber'
-import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js'
 import Tower from './assets/Tower'
 import Enemy from './assets/Enemy'
 import Bullet from './assets/Bullet'
 import Ground from './components/Ground'
+import UI from './components/UI'
 import { GRID_CELL_SIZE, GRID_SIZE, MAP_WIDTH, ENEMY_SIZE, ENEMY_SPEED } from './constants'
 import './App.css'
 import {
@@ -15,8 +16,6 @@ import {
 	calculateTimeToInterception,
 	getSpeedVector,
 } from './helpers'
-
-extend({ FlyControls })
 
 function Camera() {
 	const ref = useRef()
@@ -90,6 +89,7 @@ function App() {
 		}
 	})
 	const [bullets, setBullets] = useState<BulletType[]>([])
+	const [placingTower, setPlacingTower] = useState(null)
 
 	const firstEnemy: EnemyType | null = Object.values(enemies).reduce((result, currentEnemy) => {
 		if (!result) {
@@ -117,7 +117,7 @@ function App() {
 						rotation={[Math.PI / 2, 0, 0]}
 					/>
 					<Camera />
-					{/* <Controls /> */}
+					{/* <OrbitControls /> */}
 					{towers.map((tower) => (
 						<Tower
 							x={tower.x * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}
@@ -168,8 +168,12 @@ function App() {
 						/>
 					))}
 					<Ground
-						onClick={(x, y) => setTowers((towers) => [...towers, { id: nextTowerId++, x, y }])}
+						onClick={(x, y) => {
+							setTowers((towers) => [...towers, { id: nextTowerId++, x, y }])
+							setPlacingTower(null)
+						}}
 						path={path}
+						canPlace={!!placingTower}
 					/>
 					<Enemies
 						path={pathArray}
@@ -202,6 +206,7 @@ function App() {
 					/>
 				</Suspense>
 			</Canvas>
+			<UI onSelectTowerToBuy={setPlacingTower} />
 		</div>
 	)
 }

@@ -3,7 +3,14 @@ import { useTexture } from '@react-three/drei'
 import { GRID_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT } from '../constants'
 import grassImage from '../assets/grasslight-big.jpg'
 
-export default function Ground({ onClick, path }: { onClick: (x: number, y: number) => void }) {
+export default function Ground({
+	onClick,
+	path,
+	canPlace,
+}: {
+	onClick: (x: number, y: number) => void
+	canPlace: boolean
+}) {
 	const grounds = []
 	const [hoveredGrid, setHoveredGrid] = useState<[number, number] | null>(null)
 
@@ -23,7 +30,9 @@ export default function Ground({ onClick, path }: { onClick: (x: number, y: numb
 						onPointerOut={() => setHoveredGrid(null)}
 						onClick={(e) => {
 							e.stopPropagation()
-							onClick(i, j)
+							if (canPlace) {
+								onClick(i, j)
+							}
 						}}
 					/>
 				)
@@ -45,7 +54,7 @@ export default function Ground({ onClick, path }: { onClick: (x: number, y: numb
 							e.stopPropagation()
 							console.log(e)
 							console.log('pointer over grass ', i, j)
-							if (e.faceIndex === 8 || e.faceIndex === 9) {
+							if ((e.faceIndex === 8 || e.faceIndex === 9) && canPlace) {
 								// Only accept events on the top of the cube
 								setHoveredGrid([i, j])
 							}
