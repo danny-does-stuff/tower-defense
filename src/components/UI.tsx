@@ -5,7 +5,7 @@ export default function UI({
 	onSelectTowerToBuy,
 }: {
 	onSelectTowerToBuy: (towerType: string) => void
-}) {
+}): JSX.Element {
 	const [towerSelectorOpen, setTowerSelectorOpen] = useState(false)
 	return (
 		<>
@@ -25,12 +25,7 @@ export default function UI({
 				}}
 			>
 				<span>Moneyz: $150</span>
-				<button
-					onClick={() => setTowerSelectorOpen((isOpen) => !isOpen)}
-					selected={towerSelectorOpen}
-				>
-					Buy Tower
-				</button>
+				<button onClick={() => setTowerSelectorOpen((isOpen) => !isOpen)}>Buy Tower</button>
 			</div>
 		</>
 	)

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useFrame } from 'react-three-fiber'
 import { ENEMY_SIZE } from '../constants'
+import { Enemy as EnemyType } from '../types'
 
 export default function Enemy({
 	x,
@@ -13,14 +14,16 @@ export default function Enemy({
 	y: number
 	targetLocation: [number, number] | null
 	speed: number
-}) {
+	onUpdate: (updateValue: Partial<EnemyType>) => void
+}): JSX.Element {
 	useFrame((_, delta) => {
 		if (!targetLocation) {
+			throw new Error('There is no targetLocation')
 			// ??
 		}
 		const [targetX, targetY] = targetLocation
 
-		const update = {}
+		const update: Partial<EnemyType> = {}
 
 		if (x !== targetX) {
 			if (x < targetX) {

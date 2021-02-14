@@ -1,6 +1,7 @@
 import distance from 'euclidean-distance'
 
 import { GRID_CELL_SIZE } from './constants'
+import { ArrayPath, Enemy } from './types'
 
 export function getTimeToTarget(
 	origin: [number, number, number],
@@ -10,9 +11,14 @@ export function getTimeToTarget(
 	return getTimeToTravelDistance(distance(origin, destination), speed)
 }
 
-export function getFutureLocation(enemy, path, time: number): [number, number] {
+export function getFutureLocation(
+	enemy: Enemy,
+	path: ArrayPath,
+	time: number
+): [number, number] | null {
 	for (let i = enemy.currentCellIndex; i < path.length && time > 0; i++) {
-		const location = i === enemy.currentCellIndex ? [enemy.x, enemy.y] : getPathLocation(path, i)
+		const location: [number, number] | null =
+			i === enemy.currentCellIndex ? [enemy.x, enemy.y] : getPathLocation(path, i)
 		const nextLocation = getPathLocation(path, i + 1)
 		if (!nextLocation) {
 			return location
@@ -21,6 +27,9 @@ export function getFutureLocation(enemy, path, time: number): [number, number] {
 		const nextDistance = distance(location, nextLocation)
 		const timeToTravelNextDistance = getTimeToTravelDistance(nextDistance, enemy.speed)
 		if (time <= timeToTravelNextDistance) {
+			if (!location) {
+				return null
+			}
 			const percentageOfDistanceToTravel = time / timeToTravelNextDistance
 			return linearInterpolation(location, nextLocation, percentageOfDistanceToTravel)
 		} else {
@@ -45,7 +54,7 @@ export function getTimeToTravelDistance(distance: number, speed: number): number
 	return (distance / speed) * 1000
 }
 
-export function getPathLocation(path, pathIndex: number): [number, number] | null {
+export function getPathLocation(path: ArrayPath, pathIndex: number): [number, number] | null {
 	const targetCell = path[pathIndex]
 
 	if (!targetCell) {
@@ -56,7 +65,7 @@ export function getPathLocation(path, pathIndex: number): [number, number] | nul
 	return [targetCellX * GRID_CELL_SIZE, targetCellY * GRID_CELL_SIZE]
 }
 
-export function getSpeedVector(enemy, path): [number, number] {
+export function getSpeedVector(enemy: Enemy, path: ArrayPath): [number, number] {
 	console.log(enemy)
 
 	const targetLocation = getPathLocation(path, enemy.currentCellIndex + 1)
@@ -100,7 +109,7 @@ export function calculateTimeToInterception(
 	v: [number, number],
 	b: [number, number],
 	s: number
-): [number, number] | null {
+): number | null {
 	const ox = a[0] - b[0]
 	const oy = a[1] - b[1]
 

@@ -17,7 +17,7 @@ export default function Bullet({
 	startTime: Date
 	speed: number
 	onFinish: () => void
-}) {
+}): JSX.Element {
 	const { position } = useSpring({
 		from: { position: origin },
 		to: { position: destination },

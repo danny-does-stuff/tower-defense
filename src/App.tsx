@@ -16,23 +16,34 @@ import {
 	calculateTimeToInterception,
 	getSpeedVector,
 } from './helpers'
+import {
+	Enemy as EnemyType,
+	Tower as TowerType,
+	Bullet as BulletType,
+	IndexedPath,
+	ArrayPath,
+} from './types'
 
 function Camera() {
-	const ref = useRef()
+	const ref = useRef<THREE.PerspectiveCamera>()
 	const { setDefaultCamera } = useThree()
 	// This makes sure that size-related calculations are proper
 	// Every call to useThree will return this camera instead of the default camera
 	useEffect(() => {
-		setDefaultCamera(ref.current)
-		ref.current.lookAt(MAP_WIDTH / 2, MAP_WIDTH / 2, 0)
-		ref.current.rotateZ(-0.4)
+		const currentValue = ref.current
+		if (!currentValue) {
+			return
+		}
+		setDefaultCamera(currentValue)
+		currentValue.lookAt(MAP_WIDTH / 2, MAP_WIDTH / 2, 0)
+		currentValue.rotateZ(-0.4)
 	}, [])
 	return <perspectiveCamera ref={ref} position={[100, -150, 100]} rotation={[0, Math.PI / 2, 0]} />
 }
 
-function getPath() {
-	const pathArray = []
-	const indexedPath = {}
+function getPath(): [IndexedPath, ArrayPath] {
+	const pathArray: ArrayPath = []
+	const indexedPath: IndexedPath = {}
 	function addToPath(x: number, y: number) {
 		pathArray.push([x, y])
 
@@ -54,19 +65,9 @@ function getPath() {
 	return [indexedPath, pathArray]
 }
 
-interface EnemyType {
-	currentCellIndex: number
-	x: number
-	y: number
-	speed: number
-	hp: number
-	futureHp: number
-	id: number
-}
-
 let enemyId = 0
 
-function getEnemy(path): EnemyType {
+function getEnemy(path: ArrayPath): EnemyType {
 	return {
 		currentCellIndex: 0,
 		x: path[0][0],
@@ -79,9 +80,9 @@ function getEnemy(path): EnemyType {
 }
 
 function App() {
-	const [towers, setTowers] = useState([])
+	const [towers, setTowers] = useState<Array<TowerType>>([])
 	const [path, pathArray] = useMemo(getPath, [])
-	const [enemies, setEnemies] = useState<{ number: EnemyType }>(() => {
+	const [enemies, setEnemies] = useState<Record<number, EnemyType>>(() => {
 		const enemy = getEnemy(pathArray)
 
 		return {
@@ -89,21 +90,24 @@ function App() {
 		}
 	})
 	const [bullets, setBullets] = useState<BulletType[]>([])
-	const [placingTower, setPlacingTower] = useState(null)
+	const [placingTower, setPlacingTower] = useState<string | null>(null)
 
-	const firstEnemy: EnemyType | null = Object.values(enemies).reduce((result, currentEnemy) => {
-		if (!result) {
-			if (currentEnemy.futureHp > 0) {
+	const firstEnemy: EnemyType | null = Object.values(enemies).reduce(
+		(result: EnemyType | null, currentEnemy: EnemyType) => {
+			if (!result) {
+				if (currentEnemy.futureHp > 0) {
+					return currentEnemy
+				}
+				return null
+			}
+
+			if (currentEnemy.currentCellIndex > result.currentCellIndex && currentEnemy.futureHp > 0) {
 				return currentEnemy
 			}
-			return null
-		}
-
-		if (currentEnemy.currentCellIndex > result.currentCellIndex && currentEnemy.futureHp > 0) {
-			return currentEnemy
-		}
-		return result
-	}, null)
+			return result
+		},
+		null
+	)
 
 	return (
 		<div className="App">
@@ -125,6 +129,9 @@ function App() {
 							color={'hotpink'}
 							target={firstEnemy}
 							onShoot={(origin, bulletSpeed) => {
+								if (!firstEnemy) {
+									return
+								}
 								const timeToInterception = calculateTimeToInterception(
 									[firstEnemy.x, firstEnemy.y],
 									getSpeedVector(firstEnemy, pathArray),
@@ -141,6 +148,9 @@ function App() {
 									timeToInterception
 								)
 								console.log(firstEnemy.x, firstEnemy.y, interceptionPoint)
+								if (!interceptionPoint) {
+									return
+								}
 
 								setEnemies((enemies) => {
 									const targettedEnemy = enemies[firstEnemy.id]
@@ -153,7 +163,7 @@ function App() {
 									}
 								})
 
-								setBullets((bullets) => [
+								setBullets((bullets: BulletType[]): BulletType[] => [
 									...bullets,
 									{
 										origin,
@@ -219,44 +229,40 @@ function Enemies({
 	onUpdate,
 }: {
 	path: Array<[number, number]>
-	enemies: { number: EnemyType }
-	onUpdate: (string, {}) => mixed
+	enemies: Record<number, EnemyType>
+	onUpdate: (enemyId: number, updateValules: Partial<EnemyType>) => void
 }) {
-	return Object.values(enemies).map((enemy) => {
-		const targetLocation = getPathLocation(path, enemy.currentCellIndex + 1)
+	return (
+		<>
+			{Object.values(enemies).map((enemy) => {
+				const targetLocation = getPathLocation(path, enemy.currentCellIndex + 1)
 
-		if (!targetLocation) {
-			return null
-		}
+				if (!targetLocation) {
+					return null
+				}
 
-		const [targetX, targetY] = targetLocation
+				const [targetX, targetY] = targetLocation
 
-		return (
-			<Enemy
-				key={enemy.id}
-				{...enemy}
-				targetLocation={[targetX, targetY]}
-				onUpdate={(update) => {
-					const yIsUpToDate = (update.y || enemy.y) === targetY
-					const xIsUpToDate = (update.x || enemy.x) === targetX
+				return (
+					<Enemy
+						key={enemy.id}
+						{...enemy}
+						targetLocation={[targetX, targetY]}
+						onUpdate={(update: Partial<EnemyType>) => {
+							const yIsUpToDate = (update.y || enemy.y) === targetY
+							const xIsUpToDate = (update.x || enemy.x) === targetX
 
-					if (yIsUpToDate && xIsUpToDate) {
-						update.currentCellIndex = enemy.currentCellIndex + 1
-					}
+							if (yIsUpToDate && xIsUpToDate) {
+								update.currentCellIndex = enemy.currentCellIndex + 1
+							}
 
-					onUpdate(enemy.id, update)
-				}}
-			/>
-		)
-	})
-}
-
-interface BulletType {
-	origin: [number, number, number]
-	destination: [number, number, number]
-	startTime: Date
-	speed: number
-	targetEnemy: number
+							onUpdate(enemy.id, update)
+						}}
+					/>
+				)
+			})}
+		</>
+	)
 }
 
 function Bullets({
@@ -266,15 +272,19 @@ function Bullets({
 	bullets: BulletType[]
 	removeBullet: (bullet: BulletType) => void
 }) {
-	return bullets.map((bullet) => (
-		<Bullet
-			{...bullet}
-			onFinish={() => {
-				removeBullet(bullet)
-			}}
-			key={`${bullet.startTime}${bullet.origin.join('')}${bullet.destination.join('')}`}
-		/>
-	))
+	return (
+		<>
+			{bullets.map((bullet) => (
+				<Bullet
+					{...bullet}
+					onFinish={() => {
+						removeBullet(bullet)
+					}}
+					key={`${bullet.startTime}${bullet.origin.join('')}${bullet.destination.join('')}`}
+				/>
+			))}
+		</>
+	)
 }
 
 export default App

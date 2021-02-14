@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { useFrame } from 'react-three-fiber'
 import { BULLET_SPEED, TOWER_SIZE } from '../constants'
+import { Enemy } from '../types'
 
 export default function Tower({
 	x,
@@ -13,7 +14,8 @@ export default function Tower({
 	y: number
 	color: string
 	onShoot: (origin: [number, number, number], bulletSpeed: number) => void
-}) {
+	target: Enemy | null
+}): JSX.Element {
 	const shootRef = useRef(30)
 	// Set up state for the hovered and active state
 	const [hovered, setHover] = useState(false)

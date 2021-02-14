@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useTexture } from '@react-three/drei'
 import { GRID_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT } from '../constants'
 import grassImage from '../assets/grasslight-big.jpg'
+import { MeshProps } from 'react-three-fiber'
+import { IndexedPath } from '../types'
 
 export default function Ground({
 	onClick,
@@ -10,7 +12,8 @@ export default function Ground({
 }: {
 	onClick: (x: number, y: number) => void
 	canPlace: boolean
-}) {
+	path: IndexedPath
+}): JSX.Element {
 	const grounds = []
 	const [hoveredGrid, setHoveredGrid] = useState<[number, number] | null>(null)
 
@@ -65,7 +68,7 @@ export default function Ground({
 		}
 	}
 
-	return grounds
+	return <>{grounds}</>
 }
 
 function Path({ position }: { position: [number, number, number] }) {
@@ -85,7 +88,7 @@ function Path({ position }: { position: [number, number, number] }) {
 	)
 }
 
-function Grass({ position, ...rest }: { position: [number, number, number] }) {
+function Grass({ position, ...rest }: { position: [number, number, number] } & MeshProps) {
 	const grassTexture = useTexture(grassImage)
 
 	return (
@@ -96,7 +99,7 @@ function Grass({ position, ...rest }: { position: [number, number, number] }) {
 	)
 }
 
-function HoveredGrass({ position, ...rest }: { position: [number, number, number] }) {
+function HoveredGrass({ position, ...rest }: { position: [number, number, number] } & MeshProps) {
 	return (
 		<mesh position={position} {...rest}>
 			<boxBufferGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
