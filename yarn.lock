@@ -302,6 +302,11 @@
     utility-types "^3.10.0"
     zustand "^3.0.3"
 
+"@types/euclidean-distance@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/euclidean-distance/-/euclidean-distance-1.0.1.tgz#cc2beedc942645b7bb9bb0be088a57439b7a1406"
+  integrity sha512-asAL1hAJfOm3z6hOstOWxxJ6vGyGdo/6yqdDZerCQem/71vezH/9IZECXn8qYgFRixtRPt+HJaJhzTiYqbR/Kg==
+
 "@types/json-schema@^7.0.3":
   version "7.0.7"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.7.tgz#98a993516c859eb0d5c4c8f098317a9ea68db9ad"
