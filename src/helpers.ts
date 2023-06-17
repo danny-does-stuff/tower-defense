@@ -1,7 +1,7 @@
 import distance from 'euclidean-distance'
 
 import { GRID_CELL_SIZE } from './constants'
-import { ArrayPath, Enemy } from './types'
+import { ArrayPath, Enemy, TowerType, TOWER_TYPES, UpgradeEffect, ITower } from './types'
 
 export function getTimeToTarget(
 	origin: [number, number, number],
@@ -148,4 +148,20 @@ export function calculateTimeToInterception(
 	// return [a[0] + t * v[0], a[1] + t * v[1]]
 
 	return t * 1000
+}
+
+/**
+ * A type safe way to get the keys from an object
+ */
+export const getKeys = <T extends Record<string, unknown>>(o: T): Array<keyof T> =>
+	<Array<keyof T>>Object.keys(o)
+
+export function getDamage({ type, upgrades }: ITower): number {
+	let damage = TOWER_TYPES[type].damage
+	for (const upgrade of upgrades) {
+		if (upgrade.damage) {
+			damage += upgrade.damage
+		}
+	}
+	return damage
 }

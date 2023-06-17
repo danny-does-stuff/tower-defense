@@ -10,18 +10,20 @@ import UI from './components/UI'
 import { GRID_CELL_SIZE, GRID_SIZE, MAP_WIDTH, ENEMY_SIZE, ENEMY_SPEED } from './constants'
 import './App.css'
 import {
-	getTimeToTarget,
 	getFutureLocation,
 	getPathLocation,
 	calculateTimeToInterception,
 	getSpeedVector,
+	getDamage,
 } from './helpers'
 import {
 	Enemy as EnemyType,
-	Tower as TowerType,
+	ITower,
 	Bullet as BulletType,
 	IndexedPath,
 	ArrayPath,
+	TOWER_TYPES,
+	TowerType,
 } from './types'
 
 function Camera() {
@@ -79,18 +81,22 @@ function getEnemy(path: ArrayPath): EnemyType {
 	}
 }
 
-function App() {
-	const [towers, setTowers] = useState<Array<TowerType>>([])
+function App(): JSX.Element {
+	const [towers, setTowers] = useState<Array<ITower>>([])
 	const [path, pathArray] = useMemo(getPath, [])
 	const [enemies, setEnemies] = useState<Record<number, EnemyType>>(() => {
 		const enemy = getEnemy(pathArray)
 
 		return {
 			[enemy.id]: enemy,
+			// [enemy2.id]: enemy,
+			// [enemy3.id]: enemy,
+			// [enemy4.id]: enemy,
 		}
 	})
 	const [bullets, setBullets] = useState<BulletType[]>([])
-	const [placingTower, setPlacingTower] = useState<string | null>(null)
+	const [placingTower, setPlacingTower] = useState<TowerType | null>(null)
+	const [moneyz, setMoneyz] = useState(150)
 
 	const firstEnemy: EnemyType | null = Object.values(enemies).reduce(
 		(result: EnemyType | null, currentEnemy: EnemyType) => {
@@ -126,7 +132,7 @@ function App() {
 						<Tower
 							x={tower.x * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}
 							y={tower.y * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}
-							color={'hotpink'}
+							type={tower.type}
 							target={firstEnemy}
 							onShoot={(origin, bulletSpeed) => {
 								if (!firstEnemy) {
@@ -147,7 +153,6 @@ function App() {
 									pathArray,
 									timeToInterception
 								)
-								console.log(firstEnemy.x, firstEnemy.y, interceptionPoint)
 								if (!interceptionPoint) {
 									return
 								}
@@ -158,7 +163,7 @@ function App() {
 										...enemies,
 										[targettedEnemy.id]: {
 											...targettedEnemy,
-											futureHp: targettedEnemy.futureHp - 10,
+											futureHp: targettedEnemy.futureHp - getDamage(tower),
 										},
 									}
 								})
@@ -171,6 +176,7 @@ function App() {
 										speed: bulletSpeed,
 										startTime: new Date(),
 										targetEnemy: firstEnemy.id,
+										originTower: tower,
 									},
 								])
 							}}
@@ -179,8 +185,20 @@ function App() {
 					))}
 					<Ground
 						onClick={(x, y) => {
-							setTowers((towers) => [...towers, { id: nextTowerId++, x, y }])
-							setPlacingTower(null)
+							if (!placingTower) {
+								return
+							}
+
+							const towerCost = TOWER_TYPES[placingTower].cost
+							if (moneyz < towerCost) {
+								return
+							}
+							setMoneyz((moneyz) => moneyz - towerCost)
+
+							setTowers((towers) => [
+								...towers,
+								{ id: nextTowerId++, x, y, type: placingTower, upgrades: [] },
+							])
 						}}
 						path={path}
 						canPlace={!!placingTower}
@@ -204,9 +222,9 @@ function App() {
 								const hitEnemyId = bulletToRemove.targetEnemy
 								newEnemies[hitEnemyId] = {
 									...newEnemies[hitEnemyId],
-									hp: newEnemies[hitEnemyId].hp - 10,
+									hp: newEnemies[hitEnemyId].hp - getDamage(bulletToRemove.originTower),
 								}
-								if (newEnemies[hitEnemyId].hp === 0) {
+								if (newEnemies[hitEnemyId].hp <= 0) {
 									delete newEnemies[hitEnemyId]
 								}
 								return newEnemies
@@ -216,7 +234,7 @@ function App() {
 					/>
 				</Suspense>
 			</Canvas>
-			<UI onSelectTowerToBuy={setPlacingTower} />
+			<UI onSelectTowerToBuy={setPlacingTower} moneyz={moneyz} />
 		</div>
 	)
 }
@@ -230,7 +248,7 @@ function Enemies({
 }: {
 	path: Array<[number, number]>
 	enemies: Record<number, EnemyType>
-	onUpdate: (enemyId: number, updateValules: Partial<EnemyType>) => void
+	onUpdate: (enemyId: number, updateValues: Partial<EnemyType>) => void
 }) {
 	return (
 		<>
