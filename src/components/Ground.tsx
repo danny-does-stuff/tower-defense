@@ -25,10 +25,15 @@ export default function Ground({
 				j * GRID_CELL_SIZE + GRID_CELL_SIZE / 2,
 				-GROUND_HEIGHT / 2,
 			]
+
+			const commonProps = {
+				position,
+				key: `${i}-${j}`,
+			}
 			if (hoveredGrid && hoveredGrid[0] === i && hoveredGrid[1] === j) {
 				grounds.push(
 					<HoveredGrass
-						position={position}
+						{...commonProps}
 						onPointerOver={(e) => e.stopPropagation()}
 						onPointerOut={() => setHoveredGrid(null)}
 						onClick={(e) => {
@@ -40,19 +45,11 @@ export default function Ground({
 					/>
 				)
 			} else if (isInPath) {
-				grounds.push(
-					<Path
-						position={[
-							i * GRID_CELL_SIZE + GRID_CELL_SIZE / 2,
-							j * GRID_CELL_SIZE + GRID_CELL_SIZE / 2,
-							-GROUND_HEIGHT / 2,
-						]}
-					/>
-				)
+				grounds.push(<Path {...commonProps} />)
 			} else {
 				grounds.push(
 					<Grass
-						position={position}
+						{...commonProps}
 						onPointerOver={(e) => {
 							e.stopPropagation()
 							if ((e.faceIndex === 8 || e.faceIndex === 9) && canPlace) {

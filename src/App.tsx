@@ -101,12 +101,9 @@ function App(): JSX.Element {
 		<div className="App">
 			<Canvas
 				camera={{
-					// fov: 75,
-					// near: 0.1,
-					// far: 1000,
-					position: [MAP_WIDTH / 2, -(MAP_WIDTH / 4), MAP_WIDTH / 3],
-					rotation: [-175, 0, 0],
-					// lookAt: new THREE.Vector3(MAP_WIDTH / 2, MAP_WIDTH / 2, 0),
+					fov: 50,
+					position: [150, -125, 125],
+					rotation: [Math.PI / 3.1, 0, 0],
 				}}
 			>
 				<Suspense fallback={null}>
