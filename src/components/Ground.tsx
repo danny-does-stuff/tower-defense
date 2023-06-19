@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useTexture } from '@react-three/drei'
 import { GRID_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT } from '../constants'
 import grassImage from '../assets/grasslight-big.jpg'
-import { MeshProps } from 'react-three-fiber'
+import { MeshProps } from '@react-three/fiber'
 import { IndexedPath } from '../types'
 
 export default function Ground({
@@ -55,8 +55,6 @@ export default function Ground({
 						position={position}
 						onPointerOver={(e) => {
 							e.stopPropagation()
-							console.log(e)
-							console.log('pointer over grass ', i, j)
 							if ((e.faceIndex === 8 || e.faceIndex === 9) && canPlace) {
 								// Only accept events on the top of the cube
 								setHoveredGrid([i, j])
@@ -82,7 +80,7 @@ function Path({ position }: { position: [number, number, number] }) {
 				e.stopPropagation()
 			}}
 		>
-			<boxBufferGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
+			<boxGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
 			<meshStandardMaterial color={'brown'} />
 		</mesh>
 	)
@@ -93,7 +91,7 @@ function Grass({ position, ...rest }: { position: [number, number, number] } & M
 
 	return (
 		<mesh position={position} {...rest}>
-			<boxBufferGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
+			<boxGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
 			<meshStandardMaterial map={grassTexture} />
 		</mesh>
 	)
@@ -102,7 +100,7 @@ function Grass({ position, ...rest }: { position: [number, number, number] } & M
 function HoveredGrass({ position, ...rest }: { position: [number, number, number] } & MeshProps) {
 	return (
 		<mesh position={position} {...rest}>
-			<boxBufferGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
+			<boxGeometry args={[GRID_CELL_SIZE, GRID_CELL_SIZE, GROUND_HEIGHT]} />
 			<meshStandardMaterial color={'gold'} />
 		</mesh>
 	)

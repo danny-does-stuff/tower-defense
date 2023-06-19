@@ -66,8 +66,6 @@ export function getPathLocation(path: ArrayPath, pathIndex: number): [number, nu
 }
 
 export function getSpeedVector(enemy: Enemy, path: ArrayPath): [number, number] {
-	console.log(enemy)
-
 	const targetLocation = getPathLocation(path, enemy.currentCellIndex + 1)
 	if (!targetLocation) {
 		throw new Error('not getting a targetLocation')

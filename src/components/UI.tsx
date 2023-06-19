@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useSpring, animated } from 'react-spring'
+import { useSpring, animated } from '@react-spring/web'
 import { getKeys } from '../helpers'
 import { TowerType, TOWER_TYPES } from '../types'
 

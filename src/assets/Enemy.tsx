@@ -1,5 +1,5 @@
 import React from 'react'
-import { useFrame } from 'react-three-fiber'
+import { useFrame } from '@react-three/fiber'
 import { ENEMY_SIZE } from '../constants'
 import { Enemy as EnemyType } from '../types'
 
@@ -46,7 +46,7 @@ export default function Enemy({
 
 	return (
 		<mesh position={[x, y, ENEMY_SIZE]} scale={[1, 1, 1]}>
-			<tetrahedronBufferGeometry args={[ENEMY_SIZE, 0]} />
+			<tetrahedronGeometry args={[ENEMY_SIZE, 0]} />
 			<meshStandardMaterial color={'blue'} />
 		</mesh>
 	)

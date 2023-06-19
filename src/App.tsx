@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect, useMemo, Suspense } from 'react'
+import React, { useState, useMemo, Suspense } from 'react'
 import { OrbitControls } from '@react-three/drei'
-import * as THREE from 'three'
-import { Canvas, useThree, extend } from 'react-three-fiber'
+import { Canvas } from '@react-three/fiber'
 import Tower from './assets/Tower'
 import Enemy from './assets/Enemy'
 import Bullet from './assets/Bullet'
@@ -25,23 +24,6 @@ import {
 	TOWER_TYPES,
 	TowerType,
 } from './types'
-
-function Camera() {
-	const ref = useRef<THREE.PerspectiveCamera>()
-	const { setDefaultCamera } = useThree()
-	// This makes sure that size-related calculations are proper
-	// Every call to useThree will return this camera instead of the default camera
-	useEffect(() => {
-		const currentValue = ref.current
-		if (!currentValue) {
-			return
-		}
-		setDefaultCamera(currentValue)
-		currentValue.lookAt(MAP_WIDTH / 2, MAP_WIDTH / 2, 0)
-		currentValue.rotateZ(-0.4)
-	}, [])
-	return <perspectiveCamera ref={ref} position={[100, -150, 100]} rotation={[0, Math.PI / 2, 0]} />
-}
 
 function getPath(): [IndexedPath, ArrayPath] {
 	const pathArray: ArrayPath = []
@@ -117,7 +99,16 @@ function App(): JSX.Element {
 
 	return (
 		<div className="App">
-			<Canvas>
+			<Canvas
+				camera={{
+					// fov: 75,
+					// near: 0.1,
+					// far: 1000,
+					position: [MAP_WIDTH / 2, -(MAP_WIDTH / 4), MAP_WIDTH / 3],
+					rotation: [-175, 0, 0],
+					// lookAt: new THREE.Vector3(MAP_WIDTH / 2, MAP_WIDTH / 2, 0),
+				}}
+			>
 				<Suspense fallback={null}>
 					<ambientLight intensity={0.3} />
 					<pointLight position={[MAP_WIDTH / 2, 400, MAP_WIDTH / 2]} />
@@ -126,7 +117,7 @@ function App(): JSX.Element {
 						args={[MAP_WIDTH * 2, (MAP_WIDTH / GRID_CELL_SIZE) * 2, 'white', 'gray']}
 						rotation={[Math.PI / 2, 0, 0]}
 					/>
-					<Camera />
+					{/* <Camera /> */}
 					{/* <OrbitControls /> */}
 					{towers.map((tower) => (
 						<Tower

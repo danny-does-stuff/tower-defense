@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { useFrame } from 'react-three-fiber'
+import { useFrame } from '@react-three/fiber'
 import { BULLET_SPEED, TOWER_SIZE } from '../constants'
 import { Enemy, TowerType, TOWER_TYPES } from '../types'
 
@@ -47,7 +47,7 @@ export default function Tower({
 			}}
 			onPointerOut={() => setHover(false)}
 		>
-			<boxBufferGeometry args={[TOWER_SIZE, TOWER_SIZE, TOWER_SIZE]} />
+			<boxGeometry args={[TOWER_SIZE, TOWER_SIZE, TOWER_SIZE]} />
 			<meshStandardMaterial color={hovered ? 'orange' : getColorForTowerType(type)} />
 		</mesh>
 	)

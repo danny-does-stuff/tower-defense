@@ -1,5 +1,5 @@
 import React from 'react'
-import { a, useSpring } from 'react-spring/three'
+import { a, useSpring } from '@react-spring/three'
 import { BULLET_SPEED } from '../constants'
 import { getTimeToTarget, getTimeToTravelDistance } from '../helpers'
 
@@ -27,7 +27,7 @@ export default function Bullet({
 
 	return (
 		<a.mesh position={position} scale={[1, 1, 1]}>
-			<sphereBufferGeometry args={[RADIUS]} />
+			<sphereGeometry args={[RADIUS]} />
 			<meshStandardMaterial color={'black'} />
 		</a.mesh>
 	)
